@@ -75,20 +75,26 @@ def get_tasks_for_today():
         return f"An Error Occured: {e}"
     
 # This will one ONCE in the future.
-@celery.task(bind=True)
-def hello():
+@celery.task()
+def check_tasks():
     tasks = get_tasks_for_today()
     print('Tasks ', tasks)
+    now = datetime.now()
+    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     message = client.messages.create(
-         body='Hey there',
+         body='Sent at '+dt_string,
          from_=from_number,
          to=to_number
-     )
-    return 'hello world'
+    )
+    return "check completed"
 
 with flask_app.app_context():
-    in_a_minute = datetime.utcnow() + timedelta(minutes=1)
-    hello.apply_async(eta=in_a_minute)
+    celery.conf.beat_schedule = {
+            "run-me-every-sixty-seconds": {
+            "task": "tasks.check_tasks",
+            "schedule": 60.0
+         }
+    }
 
 # to start:
 # heroku ps:scale worker=1
