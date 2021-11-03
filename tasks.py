@@ -19,7 +19,7 @@ import datetime
 # Go to your heroku project Dashboard to find add ons.
 # enable cloudAMPQ, then click on the info link to get the URL and paste it here.
 
-from_number = '+16085605303' # put your twilio number here'
+from_number = '+15739733743' # put your twilio number here'
 to_number = '+19012925283' # put your own phone number here
 
 api_key = os.environ['API_KEY']
@@ -99,7 +99,7 @@ with flask_app.app_context():
     celery.conf.beat_schedule = {
             "run-me-every-thirty-seconds": {
             "task": "tasks.check",
-            "schedule": crontab(minute=40, hour=5)
+            "schedule": crontab(minute=45, hour=5)
          }
     }
 
