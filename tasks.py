@@ -43,11 +43,11 @@ def make_celery(app):
     celery.Task = ContextTask
     return celery
 
-app = Flask(__name__)
-app.config.update(
+flask_app = Flask(__name__)
+flask_app.config.update(
     CELERY_BROKER_URL=cloud_amqp_url
 )
-celery = make_celery(app)
+celery = make_celery(flask_app)
 
 # Initialize Firestore DB
 if not firebase_admin._apps:
@@ -86,7 +86,7 @@ def hello():
      )
     return 'hello world'
 
-with app.app_context():
+with flask_app.app_context():
     in_a_minute = datetime.utcnow() + timedelta(minutes=1)
     hello.apply_async(eta=in_a_minute)
 
