@@ -9,6 +9,7 @@ from firebase_admin import credentials, firestore, initialize_app
 from twilio.rest import Client
 from twilio.twiml.messaging_response import MessagingResponse
 from celery import Celery
+from celery.schedules import crontab
 from time import sleep
 from datetime import datetime, timedelta
 
@@ -90,9 +91,9 @@ def check_tasks():
 
 with flask_app.app_context():
     celery.conf.beat_schedule = {
-            "run-me-every-sixty-seconds": {
+            "run-me-every-day-midnight": {
             "task": "tasks.check_tasks",
-            "schedule": 60.0
+            "schedule": crontab(hour=0, minute=0)
          }
     }
 
