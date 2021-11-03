@@ -88,7 +88,6 @@ def get_tasks_for_today():
 def check():
     tasks = get_tasks_for_today()
     print('Tasks ', tasks)
-    now = datetime.now()
     message = client.messages.create(
          body=tasks,
          from_=from_number,
