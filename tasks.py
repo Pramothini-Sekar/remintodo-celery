@@ -11,7 +11,7 @@ from twilio.twiml.messaging_response import MessagingResponse
 from celery import Celery
 from celery.schedules import crontab
 from time import sleep
-from datetime import datetime, timedelta
+from datetime import  date, datetime, timedelta
 
 #### ADD YOUR CELERY BROKER HERE
 # I enabled the Heroku add-on called cloudAMQP to use rabbitMQ as my broker
@@ -71,7 +71,18 @@ def get_tasks_for_today():
             return jsonify(todo.to_dict())
         else:
             all_todos = [doc.to_dict() for doc in todo_ref.stream()]
-            return all_todos
+            incomplete_task_titles = []
+            for task in all_todos:
+                if task['status'] != 'Completed':
+                    deadline_parsed = task['deadline'][0 : 10]
+                    deadline_parsed.split('-')
+                    task_year = deadline_parsed[0]
+                    task_month = deadline_parsed[1]
+                    task_day = deadline_parsed[2]
+                    if(task_month == date.today().month and task_day == date.today().day and task_year == date.today().year):
+                        incomplete_task_titles.append(task['title'])
+            return incomplete_task_titles
+
     except Exception as e:
         return f"An Error Occured: {e}"
     
@@ -83,7 +94,7 @@ def check_tasks():
     now = datetime.now()
     dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     message = client.messages.create(
-         body='Sent at '+dt_string,
+         body=str(tasks),
          from_=from_number,
          to=to_number
     )
@@ -93,7 +104,7 @@ with flask_app.app_context():
     celery.conf.beat_schedule = {
             "run-me-every-day-midnight": {
             "task": "tasks.check_tasks",
-            "schedule": crontab(hour=0, minute=0)
+            "schedule": crontab(hour=0, minute=5)
          }
     }
 
