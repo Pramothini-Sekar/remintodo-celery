@@ -75,7 +75,7 @@ def get_tasks_for_today():
         return f"An Error Occured: {e}"
     
 # This will one ONCE in the future.
-@celery.task()
+@celery.task(bind=True)
 def hello():
     tasks = get_tasks_for_today()
     print('Tasks ', tasks)
