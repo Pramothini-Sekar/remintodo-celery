@@ -28,8 +28,6 @@ client = Client(account_sid, auth_token)
 
 cloud_amqp_url = os.environ['CELERY_BROKER_URL']
 app = Celery('tasks', broker=cloud_amqp_url)
-app.config['CELERY_BROKER_URL'] = cloud_amqp_url
-app.secret_key = api_secret
 
 # Initialize Firestore DB
 if not firebase_admin._apps:
