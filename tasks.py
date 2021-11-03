@@ -75,10 +75,10 @@ def get_tasks_for_today():
             for task in all_todos:
                 if task['status'] != 'Completed':
                     deadline_parsed = task['deadline'][0 : 10]
-                    deadline_parsed.split('-')
-                    task_year = deadline_parsed[0]
-                    task_month = deadline_parsed[1]
-                    task_day = deadline_parsed[2]
+                    deadline_split = deadline_parsed.split('-')
+                    task_year = deadline_split[0]
+                    task_month = deadline_split[1]
+                    task_day = deadline_split[2]
                     if(task_month == date.today().month and task_day == date.today().day and task_year == date.today().year):
                         incomplete_task_titles.append(task['title'])
             return incomplete_task_titles
