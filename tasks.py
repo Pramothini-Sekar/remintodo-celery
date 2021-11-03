@@ -99,7 +99,7 @@ with flask_app.app_context():
     celery.conf.beat_schedule = {
             "run-me-every-thirty-seconds": {
             "task": "tasks.check",
-            "schedule": 30.0
+            "schedule": crontab(minute=12, hour=5)
          }
     }
 
