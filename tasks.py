@@ -1,9 +1,15 @@
 ## Flask and Twilio includes and setup
-from flask import Flask
+import os
+import time
+import json
+from flask_cors import CORS
+import firebase_admin
+from flask import Flask, request, jsonify, redirect, session, render_template
+from firebase_admin import credentials, firestore, initialize_app
 from twilio.rest import Client
+from twilio.twiml.messaging_response import MessagingResponse
 from celery import Celery
 from time import sleep
-import os
 from datetime import datetime, timedelta
 
 #### ADD YOUR CELERY BROKER HERE
@@ -18,12 +24,12 @@ api_key = os.environ['API_KEY']
 api_secret = os.environ['API_SECRET']
 account_sid = os.environ['TWILIO_ACCOUNT_SID']
 auth_token = os.environ['TWILIO_AUTH_TOKEN']
-app.secret_key = api_secret
 client = Client(account_sid, auth_token)
 
 cloud_amqp_url = os.environ['CELERY_BROKER_URL']
+app = Celery('tasks', broker=cloud_amqp_url)
 app.config['CELERY_BROKER_URL'] = cloud_amqp_url
-app = Celery(app.name, broker=cloud_amqp_url)
+app.secret_key = api_secret
 
 # Initialize Firestore DB
 if not firebase_admin._apps:
