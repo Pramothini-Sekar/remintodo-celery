@@ -55,7 +55,7 @@ def get_tasks_for_today():
 def hello():
     tasks = get_tasks_for_today()
     message = client.messages.create(
-         body=str(jsonify(tasks))
+         body=str(jsonify(tasks)),
          from_=from_number,
          to=to_number
      )
