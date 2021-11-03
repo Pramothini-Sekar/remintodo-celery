@@ -27,7 +27,27 @@ auth_token = os.environ['TWILIO_AUTH_TOKEN']
 client = Client(account_sid, auth_token)
 
 cloud_amqp_url = os.environ['CELERY_BROKER_URL']
-app = Celery('tasks', broker=cloud_amqp_url)
+
+def make_celery(app):
+    celery = Celery(
+        app.import_name,
+        broker=app.config['CELERY_BROKER_URL']
+    )
+    celery.conf.update(app.config)
+
+    class ContextTask(celery.Task):
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return self.run(*args, **kwargs)
+
+    celery.Task = ContextTask
+    return celery
+
+app = Flask(__name__)
+app.config.update(
+    CELERY_BROKER_URL=cloud_amqp_url
+)
+celery = make_celery(app)
 
 # Initialize Firestore DB
 if not firebase_admin._apps:
@@ -55,7 +75,7 @@ def get_tasks_for_today():
         return f"An Error Occured: {e}"
     
 # This will one ONCE in the future.
-@app.task()
+@celery.task()
 def hello():
     tasks = get_tasks_for_today()
     print('Tasks ', tasks)
