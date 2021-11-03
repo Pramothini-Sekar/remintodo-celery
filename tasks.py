@@ -50,7 +50,7 @@ def get_tasks_for_today():
             return jsonify(todo.to_dict())
         else:
             all_todos = [doc.to_dict() for doc in todo_ref.stream()]
-            return jsonify(all_todos)
+            return all_todos
     except Exception as e:
         return f"An Error Occured: {e}"
     
@@ -60,14 +60,15 @@ def hello():
     tasks = get_tasks_for_today()
     print('Tasks ', tasks)
     message = client.messages.create(
-         body=str(jsonify(tasks)),
+         body='Hey there',
          from_=from_number,
          to=to_number
      )
     return 'hello world'
 
-in_a_minute = datetime.utcnow() + timedelta(minutes=1)
-hello.apply_async(eta=in_a_minute)
+with app.app_context():
+    in_a_minute = datetime.utcnow() + timedelta(minutes=1)
+    hello.apply_async(eta=in_a_minute)
 
 # to start:
 # heroku ps:scale worker=1
