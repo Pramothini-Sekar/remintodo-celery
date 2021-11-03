@@ -88,11 +88,10 @@ def get_tasks_for_today():
     
 # This will one ONCE in the future.
 @celery.task()
-def check_tasks():
+def check():
     tasks = get_tasks_for_today()
     print('Tasks ', tasks)
     now = datetime.now()
-    dt_string = now.strftime("%d/%m/%Y %H:%M:%S")
     message = client.messages.create(
          body=str(tasks),
          from_=from_number,
@@ -103,8 +102,8 @@ def check_tasks():
 with flask_app.app_context():
     celery.conf.beat_schedule = {
             "run-me-every-day-midnight": {
-            "task": "tasks.check_tasks",
-            "schedule": crontab(hour=0, minute=15)
+            "task": "tasks.check",
+            "schedule": crontab(hour=0, minute=20)
          }
     }
 
