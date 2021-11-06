@@ -56,9 +56,9 @@ if not firebase_admin._apps:
     cred = credentials.Certificate('google-credentials.json')
     default_app = initialize_app(cred)
 db = firestore.client()
-todo_ref = db.collection('todos')
+user_ref = db.collection('users')
 
-def get_tasks_for_today():
+def get_tasks_for_today(number):
     """
         read() : Fetches documents from Firestore collection as JSON.
         todo : Return document that matches query ID.
@@ -66,6 +66,7 @@ def get_tasks_for_today():
     """
     our_response = "Hey!\n You NEED to complete the below tasks if you want to have a proper night's sleep. \n"
     try:
+        todo_ref = user_ref.document(number).collection("todos")
         all_todos = [doc.to_dict() for doc in todo_ref.stream()]
         incomplete_task_titles = []
         for task in all_todos:
@@ -86,20 +87,25 @@ def get_tasks_for_today():
 # This will one ONCE in the future.
 @celery.task()
 def check():
-    tasks = get_tasks_for_today()
-    print('Tasks ', tasks)
-    message = client.messages.create(
-         body=tasks,
-         from_=from_number,
-         to=to_number
-    )
+    
+    users_json = {}
+    users = user_ref.stream()
+    for user in users:
+        users_json[user.id] = user.to_dict()
+        tasks = get_tasks_for_today(users_json[user.id]['number'])
+        to_number = '+1' + users_json[user.id]['number']
+        message = client.messages.create(
+             body=tasks,
+             from_=from_number,
+             to=to_number
+        )
     return "check completed"
 
 with flask_app.app_context():
     celery.conf.beat_schedule = {
             "run-me-every-thirty-seconds": {
             "task": "tasks.check",
-            "schedule": crontab(minute=50, hour=5)
+            "schedule": crontab(minute=0, hour=13)
          }
     }
 
